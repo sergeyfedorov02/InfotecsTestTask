@@ -3,6 +3,7 @@ using InfotecsTestTask.Models.DataTransferObject;
 using InfotecsTestTask.Models.Entities;
 using System.Linq;
 using Microsoft.EntityFrameworkCore;
+using InfotecsTestTask.Extensions;
 
 namespace InfotecsTestTask.Services
 {
@@ -92,38 +93,26 @@ namespace InfotecsTestTask.Services
             }
         }
 
-        private Result CalculateAggregates(FileCSV fileEntity, List<DataCSV> dataRecords)
+        private static Result CalculateAggregates(FileCSV fileEntity, List<DataCSV> dataRecords)
         {
             var values = dataRecords.Select(r => r.Value).ToList();
             var executionTimes = dataRecords.Select(r => r.ExecutionTime).ToList();
             var dates = dataRecords.Select(r => r.Date).ToList();
 
+            var dateValues = dates.CalculateDateValues();
+
             return new Result
             {
                 FileCSV = fileEntity,
-                TimeDelta = (dates.Max() - dates.Min()).TotalSeconds,
-                MinDate = dates.Min(),
+                TimeDelta = dateValues.timeDelta,
+                MinDate = dateValues.minValue,
                 AverageExecutionTime = executionTimes.Average(),
                 AverageValue = values.Average(),
-                MedianValue = CalculateMedian(values),
+                MedianValue = values.CalculateMedian(),
                 MaxValue = values.Max(),
                 MinValue = values.Min(),
                 LastUpdated = DateTime.UtcNow
             };
-        }
-
-        private double CalculateMedian(List<double> values)
-        {
-            if (values == null || values.Count == 0)
-                return 0;
-
-            var sorted = values.OrderBy(v => v).ToList();
-            int size = sorted.Count;
-            int mid = size / 2;
-
-            return size % 2 == 0 ?
-                (sorted[mid - 1] + sorted[mid]) / 2 :
-                sorted[mid];
         }
     }
 }

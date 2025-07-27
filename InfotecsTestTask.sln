@@ -1,9 +1,11 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
-VisualStudioVersion = 17.14.36301.6 d17.14
+VisualStudioVersion = 17.14.36301.6
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "InfotecsTestTask", "InfotecsTestTask\InfotecsTestTask.csproj", "{4A8BE414-3985-46D5-A72D-F4A341F087E5}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "InfotecsTests", "InfotecsTests\InfotecsTests.csproj", "{5F1D6860-C0A6-463B-A7EF-9724C5F77F0C}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -15,6 +17,10 @@ Global
 		{4A8BE414-3985-46D5-A72D-F4A341F087E5}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{4A8BE414-3985-46D5-A72D-F4A341F087E5}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{4A8BE414-3985-46D5-A72D-F4A341F087E5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5F1D6860-C0A6-463B-A7EF-9724C5F77F0C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5F1D6860-C0A6-463B-A7EF-9724C5F77F0C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5F1D6860-C0A6-463B-A7EF-9724C5F77F0C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5F1D6860-C0A6-463B-A7EF-9724C5F77F0C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
