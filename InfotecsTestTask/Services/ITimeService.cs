@@ -1,4 +1,5 @@
 ﻿using InfotecsTestTask.Models.DataTransferObject;
+using InfotecsTestTask.Models.Entities;
 
 namespace InfotecsTestTask.Services
 {
@@ -10,6 +11,8 @@ namespace InfotecsTestTask.Services
         );
 
         Task<DataGetTopResults<List<CsvRecordDto>>> GetLastRecordsAsync(string fileName, int limit = 10);
+
+        Task<DataFilterResults<List<ResultDto>>> GetResultsFilterAsync(ResultFilterDto filters);
     }
 
     public class FileProcessingResult
@@ -24,6 +27,13 @@ namespace InfotecsTestTask.Services
     {
         public bool Success { get; set; }
         public List<CsvRecordDto> Data { get; set; }
+        public string ErrorMessage { get; set; }
+    }
+
+    public class DataFilterResults<T>
+    {
+        public bool Success { get; set; }
+        public List<ResultDto> Data { get; set; }
         public string ErrorMessage { get; set; }
     }
 }

@@ -3,6 +3,7 @@ using InfotecsTestTask.Models.DataTransferObject;
 using InfotecsTestTask.Models.Entities;
 using Microsoft.EntityFrameworkCore;
 using InfotecsTestTask.Extensions;
+using Microsoft.AspNetCore.Routing.Constraints;
 
 namespace InfotecsTestTask.Services
 {
@@ -139,6 +140,49 @@ namespace InfotecsTestTask.Services
                 {
                     Success = false,
                     ErrorMessage = "Произошла ошибка при обработке запроса"
+                };
+            }
+        }
+
+        public async Task<DataFilterResults<List<ResultDto>>> GetResultsFilterAsync(ResultFilterDto filters)
+        {
+            await using var context = ContextProvider();
+
+            try
+            {
+                var query = context.Results
+                    .Include(r => r.FileCSV)
+                    .ApplyFilters(filters)  // применение фильтров
+                    .AsQueryable();
+ 
+                // формирование результата
+                var results = await query.Select(r => new ResultDto
+                {
+                    Id = r.Id,
+                    FileId = r.FileId,
+                    FileName = r.FileCSV.FileName,
+                    MinDate = r.MinDate,
+                    AverageExecutionTime = r.AverageExecutionTime,
+                    AverageValue = r.AverageValue,
+                    MedianValue = r.MedianValue,
+                    MaxValue = r.MaxValue,
+                    MinValue = r.MinValue,
+                    LastUpdated = r.LastUpdated
+                }).ToListAsync();
+
+                return new DataFilterResults<List<ResultDto>>
+                {
+                    Success = true,
+                    Data = results
+                };
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Ошибка при фильтрации результатов");
+                return new DataFilterResults<List<ResultDto>>
+                {
+                    Success = false,
+                    ErrorMessage = "Ошибка при получении отфильтрованных данных"
                 };
             }
         }

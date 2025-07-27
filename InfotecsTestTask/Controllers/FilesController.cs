@@ -1,10 +1,11 @@
 ﻿using CsvHelper;
 using CsvHelper.Configuration;
 using FluentValidation;
+using InfotecsTestTask.Models.DataTransferObject;
+using InfotecsTestTask.Models.Entities;
+using InfotecsTestTask.Services;
 using Microsoft.AspNetCore.Mvc;
 using System.Globalization;
-using InfotecsTestTask.Models.DataTransferObject;
-using InfotecsTestTask.Services;
 
 
 
@@ -26,6 +27,30 @@ namespace InfotecsTestTask.Controllers
             _recordService = recordService;
             _validator = validator;
             _logger = logger;
+        }
+
+        [HttpGet("filterResults")]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(List<Result>))]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<ActionResult<List<Result>>> GetResultsFilter([FromQuery] ResultFilterDto filters)
+        {
+            try
+            {
+                var result = await _recordService.GetResultsFilterAsync(filters);
+
+                if (!result.Success)
+                {
+                    return BadRequest(result.ErrorMessage);
+                }
+
+                return Ok(result.Data);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Ошибка при обработке запроса фильтрации");
+                return StatusCode(500, "Произошла ошибка при обработке запроса");
+            }
         }
 
         [HttpGet("lastValues")]
