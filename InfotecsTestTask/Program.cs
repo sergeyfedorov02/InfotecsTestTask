@@ -58,7 +58,7 @@ namespace InfotecsTestTask
 
             db.Database.SetCommandTimeout(60);
             db.Database.EnsureCreated();
-            db.Database.Migrate();
+            //db.Database.Migrate();
 
             app.Run();
         }

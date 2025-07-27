@@ -3,11 +3,7 @@ using CsvHelper.Configuration;
 using FluentValidation;
 using Microsoft.AspNetCore.Mvc;
 using System.Globalization;
-using System.Security.Cryptography;
-using InfotecsTestTask.Data;
 using InfotecsTestTask.Models.DataTransferObject;
-using InfotecsTestTask.Models.Entities;
-using Microsoft.EntityFrameworkCore;
 using InfotecsTestTask.Services;
 
 
@@ -30,6 +26,41 @@ namespace InfotecsTestTask.Controllers
             _recordService = recordService;
             _validator = validator;
             _logger = logger;
+        }
+
+        [HttpGet("lastValues")]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(List<CsvRecordDto>))]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<ActionResult<List<CsvRecordDto>>> GetLastValues(string fileName)
+        {
+            try
+            {
+                var result = await _recordService.GetLastRecordsAsync(fileName);
+
+                if (!result.Success)
+                {
+                    var errorMessage = result.ErrorMessage;
+
+                    if (errorMessage != null)
+                    {
+                        return errorMessage.Contains("не найден")
+                            ? NotFound(errorMessage)
+                            : StatusCode(500, errorMessage);
+                    }
+                    else
+                    {
+                        return StatusCode(500);
+                    }   
+                }
+
+                return Ok(result.Data);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Неизвестная ошибка при получении значений для файла {FileName}", fileName);
+                return StatusCode(500, "Внутренняя ошибка сервера");
+            }
         }
 
         [HttpPost("upload")]

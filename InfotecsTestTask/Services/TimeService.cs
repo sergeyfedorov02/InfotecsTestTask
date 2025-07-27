@@ -1,7 +1,6 @@
 ﻿using InfotecsTestTask.Data;
 using InfotecsTestTask.Models.DataTransferObject;
 using InfotecsTestTask.Models.Entities;
-using System.Linq;
 using Microsoft.EntityFrameworkCore;
 using InfotecsTestTask.Extensions;
 
@@ -9,12 +8,12 @@ namespace InfotecsTestTask.Services
 {
     public class TimeService : ITimeService
     {
-        private readonly InfotecsDBContext _context;
+        private Func<InfotecsDBContext> ContextProvider { get; }
         private readonly ILogger<TimeService> _logger;
 
-        public TimeService(InfotecsDBContext context, ILogger<TimeService> logger)
+        public TimeService(Func<InfotecsDBContext> contextProvider, ILogger<TimeService> logger)
         {
-            _context = context;
+            ContextProvider = contextProvider;
             _logger = logger;
         }
 
@@ -22,11 +21,13 @@ namespace InfotecsTestTask.Services
             IFormFile uploadedFile,
             IReadOnlyList<CsvRecordDto> records)
         {
-            using var transaction = await _context.Database.BeginTransactionAsync();
+            await using var context = ContextProvider();
+
+            using var transaction = await context.Database.BeginTransactionAsync();
 
             try
             {
-                var existingFile = await _context.Files                   
+                var existingFile = await context.Files                   
                     .FirstOrDefaultAsync(f => f.FileName == uploadedFile.FileName);
 
                 // обновление или создание файла
@@ -35,11 +36,11 @@ namespace InfotecsTestTask.Services
                 if (existingFile != null)
                 {
                     // удаляем старые данные
-                    await _context.DataCSV
+                    await context.DataCSV
                         .Where(d => d.FileId == existingFile.Id)
                         .ExecuteDeleteAsync();
 
-                    await _context.Results
+                    await context.Results
                         .Where(r => r.FileId == existingFile.Id)
                         .ExecuteDeleteAsync();
 
@@ -53,7 +54,7 @@ namespace InfotecsTestTask.Services
                         FileName = uploadedFile.FileName,
                         UploadTime = DateTime.UtcNow
                     };
-                    await _context.Files.AddAsync(fileEntity);
+                    await context.Files.AddAsync(fileEntity);
                 }
 
                 // Добавляем записи
@@ -65,13 +66,13 @@ namespace InfotecsTestTask.Services
                     Value = r.Value
                 }).ToList();
 
-                await _context.DataCSV.AddRangeAsync(dataRecords);
+                await context.DataCSV.AddRangeAsync(dataRecords);
 
                 // Вычисляем агрегаты
                 var result = CalculateAggregates(fileEntity, dataRecords);
-                await _context.Results.AddAsync(result);
+                await context.Results.AddAsync(result);
 
-                await _context.SaveChangesAsync();
+                await context.SaveChangesAsync();
                 await transaction.CommitAsync();
 
                 return new FileProcessingResult
@@ -89,6 +90,55 @@ namespace InfotecsTestTask.Services
                 {
                     Success = false,
                     ErrorMessage = "Ошибка при обработке файла"
+                };
+            }
+        }
+
+        public async Task<DataGetTopResults<List<CsvRecordDto>>> GetLastRecordsAsync(string fileName, int limit = 10)
+        {
+            await using var context = ContextProvider();
+
+            try
+            {
+                // Находим файл по имени с включением связанных данных
+                var file = await context.Files
+                    .Where(f => f.FileName == fileName)  // фильтрация по имени
+                    .FirstOrDefaultAsync();
+
+                if (file == null)
+                {
+                    return new DataGetTopResults<List<CsvRecordDto>>
+                    {
+                        Success = false,
+                        ErrorMessage = $"Файл с именем '{fileName}' не найден"
+                    };
+                }
+
+                // Получаем последние 10 записей, отсортированных по дате
+                var lastRecords = await context.DataCSV.Where(d => d.FileId == file.Id)
+                    .OrderByDescending(r => r.Date)
+                    .Take(limit)
+                    .Select(r => new CsvRecordDto
+                    {
+                        Date = r.Date,
+                        ExecutionTime = r.ExecutionTime,
+                        Value = r.Value
+                    })
+                    .ToListAsync();
+
+                return new DataGetTopResults<List<CsvRecordDto>>
+                {
+                    Success = true,
+                    Data = lastRecords
+                };
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Ошибка при получении последних значений для файла {FileName}", fileName);
+                return new DataGetTopResults<List<CsvRecordDto>>
+                {
+                    Success = false,
+                    ErrorMessage = "Произошла ошибка при обработке запроса"
                 };
             }
         }

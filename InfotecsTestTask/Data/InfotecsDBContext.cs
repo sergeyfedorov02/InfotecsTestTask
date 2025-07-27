@@ -24,10 +24,14 @@ namespace InfotecsTestTask.Data
                 .HasIndex(f => f.FileName)  // индекс по имени файла
                 .IsUnique(); // уникальный индекс
 
-
+           
             // Настройка DataCSV
             builder.Entity<DataCSV>()
                 .HasKey(d => d.Id);
+
+            builder.Entity<DataCSV>()
+               .HasIndex(f => f.Date)  // индекс для сортировки по этому полю
+               .IsUnique(false);
 
             // для DataCSV(1 FileCSV->many DataCSV)
             builder.Entity<FileCSV>()
