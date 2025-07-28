@@ -18,12 +18,12 @@ namespace InfotecsTestTask
             // Add services to the container.
 
             builder.Services.AddControllers();
-            // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
-            builder.Services.AddOpenApi();
-
+            
+            // добавл€ем сервисы валидации и работы с timescale данными 
             builder.Services.AddTransient<IValidator<CsvRecordDto>, CsvRecordValidator>();
             builder.Services.AddTransient<ITimeService, TimeService>();
 
+            // настраиваем провайдера дл€ Ѕƒ (PostgreSQL)
             builder.Services.AddDbContext<InfotecsDBContext>(options =>
             {
                 options.UseNpgsql(builder.Configuration.GetConnectionString("InfotecsConnection"));
@@ -36,16 +36,11 @@ namespace InfotecsTestTask
 
             var app = builder.Build();
 
-            // Configure the HTTP request pipeline.
-            if (app.Environment.IsDevelopment())
-            {
-                app.MapOpenApi();
-            }
-
             app.UseHttpsRedirection();
 
             app.UseAuthorization();
 
+            // настройка Swagger
             if (app.Environment.IsDevelopment())
             {
                 app.UseSwagger();
@@ -54,12 +49,12 @@ namespace InfotecsTestTask
 
             app.MapControllers();
 
+            // убеждаемс€, что база создана (если нет -> создаем)
             var db = app.Services.CreateScope().ServiceProvider.GetRequiredService<InfotecsDBContext>();
 
             db.Database.SetCommandTimeout(60);
             db.Database.EnsureCreated();
-            //db.Database.Migrate();
-
+            
             app.Run();
         }
     }
