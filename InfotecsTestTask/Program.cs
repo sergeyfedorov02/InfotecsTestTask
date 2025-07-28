@@ -18,10 +18,12 @@ namespace InfotecsTestTask
             // Add services to the container.
 
             builder.Services.AddControllers();
-            
+
             // добавляем сервисы валидации и работы с timescale данными 
-            builder.Services.AddTransient<IValidator<CsvRecordDto>, CsvRecordValidator>();
-            builder.Services.AddTransient<ITimeService, TimeService>();
+            // Transient - экземпляр создается всякий раз при использовании
+            // Scoped - создается один раз на Http-запрос
+            builder.Services.AddScoped<IValidator<CsvRecordDto>, CsvRecordValidator>();
+            builder.Services.AddScoped<ITimeService, TimeService>();
 
             // настраиваем провайдера для БД (PostgreSQL)
             builder.Services.AddDbContext<InfotecsDBContext>(options =>
