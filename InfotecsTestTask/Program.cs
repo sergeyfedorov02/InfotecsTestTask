@@ -40,8 +40,8 @@ namespace InfotecsTestTask
 
             app.UseAuthorization();
 
-            // настройка Swagger
-            if (app.Environment.IsDevelopment())
+            // настройка Swagger, используем для любого окружения
+            //if (app.Environment.IsDevelopment())
             {
                 app.UseSwagger();
                 app.UseSwaggerUI();
