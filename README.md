@@ -17,7 +17,7 @@
 4. Перейти в каталог с исполняемым файлом и запустить его
 
 ```
-cd InfotecsTests\bin\Release\net9.0\publish\
+cd InfotecsTestTask\bin\Release\net9.0\publish\
 InfotecsTestTask.exe
 ```
 
