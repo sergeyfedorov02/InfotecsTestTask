@@ -7,6 +7,28 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "InfotecsTestTask", "Infotec
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "InfotecsTests", "InfotecsTests\InfotecsTests.csproj", "{5F1D6860-C0A6-463B-A7EF-9724C5F77F0C}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Элементы решения", "Элементы решения", "{754FC069-D67B-A9D7-50A1-8D1CA196D8F1}"
+	ProjectSection(SolutionItems) = preProject
+		README.md = README.md
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Images", "Images", "{36D591C7-65C7-A0D1-1CBC-10CDE441BDC8}"
+	ProjectSection(SolutionItems) = preProject
+		Images\api_page.PNG = Images\api_page.PNG
+		Images\filter_result_first_1.PNG = Images\filter_result_first_1.PNG
+		Images\filter_result_first_2.PNG = Images\filter_result_first_2.PNG
+		Images\filter_result_page.PNG = Images\filter_result_page.PNG
+		Images\filter_result_second_1.PNG = Images\filter_result_second_1.PNG
+		Images\filter_result_second_2.PNG = Images\filter_result_second_2.PNG
+		Images\load_csv.PNG = Images\load_csv.PNG
+		Images\load_csv_correct.PNG = Images\load_csv_correct.PNG
+		Images\load_csv_error.PNG = Images\load_csv_error.PNG
+		Images\load_csv_page.PNG = Images\load_csv_page.PNG
+		Images\top_values_correct.PNG = Images\top_values_correct.PNG
+		Images\top_values_error.PNG = Images\top_values_error.PNG
+		Images\top_values_page.PNG = Images\top_values_page.PNG
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
