@@ -18,9 +18,27 @@
             int size = sorted.Count;
             int mid = size / 2;
 
-            return size % 2 == 0 ?
-                (sorted[mid - 1] + sorted[mid]) / 2 :
-                sorted[mid];
+            if (size % 2 == 0)
+            {
+                var first = sorted[mid - 1];
+                var second = sorted[mid];
+
+                // если одно из значений на порядок больше другого
+                if (Math.Abs(first) > Math.Abs(second) * 1E15 || Math.Abs(second) > Math.Abs(first) * 1E15)
+                {
+                    return Math.Abs(first) > Math.Abs(second) ? first : second;
+                }
+
+                // проверка переполнения (MaxValue или MinValue -> при сложении будет бесконечность)
+                if (double.IsInfinity(first + second))
+                {
+                    return Math.Max(first, second);
+                }   
+                
+                return (first + second) / 2;
+            }
+            
+            return sorted[mid];
         }
 
         public static (DateTime minValue, double timeDelta) CalculateDateValues(this IReadOnlyList<DateTime> values)

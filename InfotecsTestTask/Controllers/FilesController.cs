@@ -2,10 +2,8 @@
 using CsvHelper.Configuration;
 using FluentValidation;
 using InfotecsTestTask.Models.DataTransferObject;
-using InfotecsTestTask.Models.Entities;
 using InfotecsTestTask.Services;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Logging;
 using System.Globalization;
 
 
@@ -30,6 +28,11 @@ namespace InfotecsTestTask.Controllers
             Logger = logger;
         }
 
+        /// <summary>
+        /// Получение записей из Result по заданным фильтрам
+        /// </summary>
+        /// <param name="filters"></param>
+        /// <returns></returns>
         [HttpGet("filterResults")]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(List<ResultDto>))]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -47,6 +50,12 @@ namespace InfotecsTestTask.Controllers
             return Ok(result.Data);
         }
 
+
+        /// <summary>
+        /// Получение последних 10 значений, отсортированных по Date (по убыванию), для заданного файла по его имени
+        /// </summary>
+        /// <param name="fileName"></param>
+        /// <returns></returns>
         [HttpGet("lastValues")]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(List<CsvRecordDto>))]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -70,6 +79,12 @@ namespace InfotecsTestTask.Controllers
             return Ok(result.Data);
         }
 
+
+        /// <summary>
+        /// Загрузка файла и обновление таблиц в базе данных
+        /// </summary>
+        /// <param name="uploadedFile"></param>
+        /// <returns></returns>
         [HttpPost("upload")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -93,7 +108,7 @@ namespace InfotecsTestTask.Controllers
                 return BadRequest($"Количество строк должно быть от 1 до 10000. Получено: {parseResult.Records.Count}");
 
             // обработка в транзакции
-            var result = await _recordService.ProcessFileAsync(uploadedFile, parseResult.Records);
+            var result = await _recordService.ProcessFileAsync(uploadedFile.FileName, parseResult.Records);
 
             if (!result.Success)
             {

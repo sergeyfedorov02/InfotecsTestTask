@@ -6,7 +6,7 @@ namespace InfotecsTestTask.Services
     public interface ITimeService
     {
         Task<DataResultDto<FileProcessingResult>> ProcessFileAsync(
-            IFormFile uploadedFile,
+            string uploadedFileName,
             IReadOnlyList<CsvRecordDto> records
         );
 

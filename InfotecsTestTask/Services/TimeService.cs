@@ -18,7 +18,7 @@ namespace InfotecsTestTask.Services
         }
 
         public async Task<DataResultDto<FileProcessingResult>> ProcessFileAsync(
-            IFormFile uploadedFile,
+            string uploadedFileName,
             IReadOnlyList<CsvRecordDto> records)
         {
             await using var context = ContextProvider();
@@ -28,7 +28,7 @@ namespace InfotecsTestTask.Services
             try
             {
                 var existingFile = await context.Files                   
-                    .FirstOrDefaultAsync(f => f.FileName == uploadedFile.FileName);
+                    .FirstOrDefaultAsync(f => f.FileName == uploadedFileName);
 
                 // обновление или создание файла
                 FileCSV fileEntity;
@@ -51,7 +51,7 @@ namespace InfotecsTestTask.Services
                 {
                     fileEntity = new FileCSV
                     {
-                        FileName = uploadedFile.FileName,
+                        FileName = uploadedFileName,
                         UploadTime = DateTime.UtcNow
                     };
                     await context.Files.AddAsync(fileEntity);

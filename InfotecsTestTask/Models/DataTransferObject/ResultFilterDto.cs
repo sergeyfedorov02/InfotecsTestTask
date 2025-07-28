@@ -38,6 +38,6 @@
         /// <summary>
         /// максимальное среднее время выполнения
         /// </summary>
-        public double? MaxAverageTime { get; set; }
+        public double? MaxAverageTime { get; set; } 
     }
 }

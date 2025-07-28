@@ -50,10 +50,5 @@ namespace InfotecsTestTask.Data
                 .WithOne(r => r.FileCSV)
                 .HasForeignKey<Result>(r => r.FileId);
         }
-
-        //protected override void ConfigureConventions(ModelConfigurationBuilder configurationBuilder)
-        //{
-        //    configurationBuilder.Conventions.Add(_ => new BlankTriggerAddingConvention());
-        //}
     }
 }
