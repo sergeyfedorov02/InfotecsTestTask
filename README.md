@@ -43,6 +43,8 @@ docker run -itd -e POSTGRES_USER=admin -e POSTGRES_PASSWORD=admin -p 5432:5432 -
 
 3. Юнит тесты реализованы в xUnit и находятся в проекте *InfotecsTests*
 
+4. Тестовые CSV-файлы находятся в папке *TestDataCsv*
+
 
 ## Демонстрация работы
 

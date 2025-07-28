@@ -29,6 +29,12 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Images", "Images", "{36D591
 		Images\top_values_page.PNG = Images\top_values_page.PNG
 	EndProjectSection
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "TestDataCsv", "TestDataCsv", "{DCC564BA-33F9-4387-9E7F-BAE0D8718FE5}"
+	ProjectSection(SolutionItems) = preProject
+		TestDataCsv\testCsv.csv = TestDataCsv\testCsv.csv
+		TestDataCsv\testCsv2.csv = TestDataCsv\testCsv2.csv
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
