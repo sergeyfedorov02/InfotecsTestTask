@@ -12,12 +12,12 @@
 
 3. Сделать публикацию для работы web-сервера
 
-```dotnet publish -p:PublishProfile=FolderProfile```
+```dotnet publish InfotecsTestTask/InfotecsTestTask.csproj -p:PublishProfile=FolderProfile```
 
 4. Перейти в каталог с исполняемым файлом и запустить его
 
 ```
-cd bin\Release\net9.0\publish
+cd InfotecsTests\bin\Release\net9.0\publish\
 InfotecsTestTask.exe
 ```
 
