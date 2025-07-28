@@ -1,39 +1,33 @@
-﻿using InfotecsTestTask.Models.DataTransferObject;
-using InfotecsTestTask.Models.Entities;
+﻿using InfotecsTestTask.Extensions;
+using InfotecsTestTask.Models.DataTransferObject;
 
 namespace InfotecsTestTask.Services
 {
     public interface ITimeService
     {
-        Task<FileProcessingResult> ProcessFileAsync(
+        Task<DataResultDto<FileProcessingResult>> ProcessFileAsync(
             IFormFile uploadedFile,
             IReadOnlyList<CsvRecordDto> records
         );
 
-        Task<DataGetTopResults<List<CsvRecordDto>>> GetLastRecordsAsync(string fileName, int limit = 10);
+        Task<DataResultDto<DataGetTopResults>> GetLastRecordsAsync(string fileName, int limit = 10);
 
-        Task<DataFilterResults<List<ResultDto>>> GetResultsFilterAsync(ResultFilterDto filters);
+        Task<DataResultDto<DataFilterResults>> GetResultsFilterAsync(ResultFilterDto filters);
     }
 
     public class FileProcessingResult
     {
-        public bool Success { get; set; }
         public long FileId { get; set; }
         public int RecordCount { get; set; }
-        public string ErrorMessage { get; set; }
     }
 
-    public class DataGetTopResults<T>
+    public class DataGetTopResults
     {
-        public bool Success { get; set; }
         public List<CsvRecordDto> Data { get; set; }
-        public string ErrorMessage { get; set; }
     }
 
-    public class DataFilterResults<T>
+    public class DataFilterResults
     {
-        public bool Success { get; set; }
         public List<ResultDto> Data { get; set; }
-        public string ErrorMessage { get; set; }
     }
 }

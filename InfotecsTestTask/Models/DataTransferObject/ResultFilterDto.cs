@@ -5,12 +5,39 @@
     /// </summary>
     public class ResultFilterDto
     {
-        public string? FileName { get; set; } // по имени файла
-        public DateTime? MinStartDate { get; set; } // начало времени запуска
-        public DateTime? MaxStartDate { get; set; } // начало времени запуска
-        public double? MinAverageValue { get; set; } // минимальное среднее значение
-        public double? MaxAverageValue { get; set; } // максимальное среднее значение
-        public double? MinAverageTime { get; set; } // минимальное среднее время выполнения
-        public double? MaxAverageTime { get; set; } // максимальное среднее время выполнения
+        /// <summary>
+        /// по имени файла
+        /// </summary>
+        public string FileName { get; set; }
+
+        /// <summary>
+        /// начало времени запуска
+        /// </summary>
+        public DateTime? MinStartDate { get; set; }
+
+        /// <summary>
+        /// начало времени запуска
+        /// </summary>
+        public DateTime? MaxStartDate { get; set; }
+
+        /// <summary>
+        /// минимальное среднее значение
+        /// </summary>
+        public double? MinAverageValue { get; set; }
+
+        /// <summary>
+        /// максимальное среднее значение
+        /// </summary>
+        public double? MaxAverageValue { get; set; }
+
+        /// <summary>
+        /// минимальное среднее время выполнения
+        /// </summary>
+        public double? MinAverageTime { get; set; }
+
+        /// <summary>
+        /// максимальное среднее время выполнения
+        /// </summary>
+        public double? MaxAverageTime { get; set; }
     }
 }

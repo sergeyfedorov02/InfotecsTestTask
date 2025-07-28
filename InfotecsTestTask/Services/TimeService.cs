@@ -3,7 +3,6 @@ using InfotecsTestTask.Models.DataTransferObject;
 using InfotecsTestTask.Models.Entities;
 using Microsoft.EntityFrameworkCore;
 using InfotecsTestTask.Extensions;
-using Microsoft.AspNetCore.Routing.Constraints;
 
 namespace InfotecsTestTask.Services
 {
@@ -18,7 +17,7 @@ namespace InfotecsTestTask.Services
             _logger = logger;
         }
 
-        public async Task<FileProcessingResult> ProcessFileAsync(
+        public async Task<DataResultDto<FileProcessingResult>> ProcessFileAsync(
             IFormFile uploadedFile,
             IReadOnlyList<CsvRecordDto> records)
         {
@@ -76,26 +75,20 @@ namespace InfotecsTestTask.Services
                 await context.SaveChangesAsync();
                 await transaction.CommitAsync();
 
-                return new FileProcessingResult
+                return DataResultDto<FileProcessingResult>.CreateFromData(new FileProcessingResult
                 {
-                    Success = true,
                     FileId = fileEntity.Id,
                     RecordCount = dataRecords.Count
-                };
+                });
             }
             catch (Exception ex)
             {
                 await transaction.RollbackAsync();
-                _logger.LogError(ex, "Ошибка при сохранении файла");
-                return new FileProcessingResult
-                {
-                    Success = false,
-                    ErrorMessage = "Ошибка при обработке файла"
-                };
+                return DataResultDto<FileProcessingResult>.CreateFromException(ex);
             }
         }
 
-        public async Task<DataGetTopResults<List<CsvRecordDto>>> GetLastRecordsAsync(string fileName, int limit = 10)
+        public async Task<DataResultDto<DataGetTopResults>> GetLastRecordsAsync(string fileName, int limit = 10)
         {
             await using var context = ContextProvider();
 
@@ -108,11 +101,9 @@ namespace InfotecsTestTask.Services
 
                 if (file == null)
                 {
-                    return new DataGetTopResults<List<CsvRecordDto>>
-                    {
-                        Success = false,
-                        ErrorMessage = $"Файл с именем '{fileName}' не найден"
-                    };
+                    return DataResultDto<DataGetTopResults>.CreateFromException(
+                        new FileNotFoundException()
+                    ); 
                 }
 
                 // Получаем последние 10 записей, отсортированных по дате
@@ -127,24 +118,18 @@ namespace InfotecsTestTask.Services
                     })
                     .ToListAsync();
 
-                return new DataGetTopResults<List<CsvRecordDto>>
+                return DataResultDto<DataGetTopResults>.CreateFromData(new DataGetTopResults
                 {
-                    Success = true,
                     Data = lastRecords
-                };
+                });
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Ошибка при получении последних значений для файла {FileName}", fileName);
-                return new DataGetTopResults<List<CsvRecordDto>>
-                {
-                    Success = false,
-                    ErrorMessage = "Произошла ошибка при обработке запроса"
-                };
+                return DataResultDto<DataGetTopResults>.CreateFromException(ex);
             }
         }
 
-        public async Task<DataFilterResults<List<ResultDto>>> GetResultsFilterAsync(ResultFilterDto filters)
+        public async Task<DataResultDto<DataFilterResults>> GetResultsFilterAsync(ResultFilterDto filters)
         {
             await using var context = ContextProvider();
 
@@ -170,20 +155,15 @@ namespace InfotecsTestTask.Services
                     LastUpdated = r.LastUpdated
                 }).ToListAsync();
 
-                return new DataFilterResults<List<ResultDto>>
+
+                return DataResultDto<DataFilterResults>.CreateFromData( new DataFilterResults
                 {
-                    Success = true,
                     Data = results
-                };
+                });
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Ошибка при фильтрации результатов");
-                return new DataFilterResults<List<ResultDto>>
-                {
-                    Success = false,
-                    ErrorMessage = "Ошибка при получении отфильтрованных данных"
-                };
+                return DataResultDto<DataFilterResults>.CreateFromException(ex);
             }
         }
 

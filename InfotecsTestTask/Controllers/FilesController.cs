@@ -5,6 +5,7 @@ using InfotecsTestTask.Models.DataTransferObject;
 using InfotecsTestTask.Models.Entities;
 using InfotecsTestTask.Services;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 using System.Globalization;
 
 
@@ -17,7 +18,7 @@ namespace InfotecsTestTask.Controllers
     {
         private readonly ITimeService _recordService;  // доступ к базе данных
         private readonly IValidator<CsvRecordDto> _validator; // валидатор - для проверки данных
-        private readonly ILogger<FilesController> _logger;
+        private ILogger<FilesController> Logger { get; }
 
         public FilesController(
             ITimeService recordService,  // для связи БД и объектной модели C# (в папке Entities)
@@ -26,31 +27,24 @@ namespace InfotecsTestTask.Controllers
         {
             _recordService = recordService;
             _validator = validator;
-            _logger = logger;
+            Logger = logger;
         }
 
         [HttpGet("filterResults")]
-        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(List<Result>))]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(List<ResultDto>))]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<ActionResult<List<Result>>> GetResultsFilter([FromQuery] ResultFilterDto filters)
+        public async Task<ActionResult<List<ResultDto>>> GetResultsFilter([FromQuery] ResultFilterDto filters)
         {
-            try
-            {
-                var result = await _recordService.GetResultsFilterAsync(filters);
+            var result = await _recordService.GetResultsFilterAsync(filters);
 
-                if (!result.Success)
-                {
-                    return BadRequest(result.ErrorMessage);
-                }
-
-                return Ok(result.Data);
-            }
-            catch (Exception ex)
+            if (!result.Success)
             {
-                _logger.LogError(ex, "Ошибка при обработке запроса фильтрации");
-                return StatusCode(500, "Произошла ошибка при обработке запроса");
+                Logger.LogError(result.Exception, "Ошибка при фильтрации результатов");
+                return StatusCode(500, "Ошибка при получении отфильтрованных данных");
+                
             }
+            return Ok(result.Data);
         }
 
         [HttpGet("lastValues")]
@@ -59,33 +53,21 @@ namespace InfotecsTestTask.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<List<CsvRecordDto>>> GetLastValues(string fileName)
         {
-            try
+            var result = await _recordService.GetLastRecordsAsync(fileName);
+
+            if (!result.Success)
             {
-                var result = await _recordService.GetLastRecordsAsync(fileName);
-
-                if (!result.Success)
+                if (result.Exception is FileNotFoundException)
                 {
-                    var errorMessage = result.ErrorMessage;
-
-                    if (errorMessage != null)
-                    {
-                        return errorMessage.Contains("не найден")
-                            ? NotFound(errorMessage)
-                            : StatusCode(500, errorMessage);
-                    }
-                    else
-                    {
-                        return StatusCode(500);
-                    }   
+                    Logger.LogError(result.Exception, $"Файл с именем '{fileName}' не найден");
+                    return NotFound("Файл не найден");
                 }
 
-                return Ok(result.Data);
+                Logger.LogError(result.Exception, $"Ошибка при получении значений для файла {fileName}");
+                return StatusCode(500, $"Ошибка при получении значений для файла {fileName}");
             }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Неизвестная ошибка при получении значений для файла {FileName}", fileName);
-                return StatusCode(500, "Внутренняя ошибка сервера");
-            }
+
+            return Ok(result.Data);
         }
 
         [HttpPost("upload")]
@@ -93,42 +75,33 @@ namespace InfotecsTestTask.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> UploadCsv(IFormFile uploadedFile)
-        {
-            try
+        {   
+            // Проверка, что файл был загружен и не превышает допустимый размер
+            if (uploadedFile == null || uploadedFile.Length == 0)
+                return BadRequest("Файл не был загружен");
+
+            if (uploadedFile.Length > 10 * 1024 * 1024) // 10MB
+                return BadRequest("Файл слишком большой");
+
+            // парсинг и валидация
+            var parseResult = await ParseAndValidateCsv(uploadedFile);
+            if (!parseResult.IsValid)
+                return BadRequest(parseResult.Errors);
+
+            // проверка количества записей
+            if (parseResult.Records.Count < 1 || parseResult.Records.Count > 10000)
+                return BadRequest($"Количество строк должно быть от 1 до 10000. Получено: {parseResult.Records.Count}");
+
+            // обработка в транзакции
+            var result = await _recordService.ProcessFileAsync(uploadedFile, parseResult.Records);
+
+            if (!result.Success)
             {
-                // Проверка, что файл был загружен и не превышает допустимый размер
-                if (uploadedFile == null || uploadedFile.Length == 0)
-                    return BadRequest("Файл не был загружен");
-
-                if (uploadedFile.Length > 10 * 1024 * 1024) // 10MB
-                    return BadRequest("Файл слишком большой");
-
-                // парсинг и валидация
-                var parseResult = await ParseAndValidateCsv(uploadedFile);
-                if (!parseResult.IsValid)
-                    return BadRequest(parseResult.Errors);
-
-                // проверка количества записей
-                if (parseResult.Records.Count < 1 || parseResult.Records.Count > 10000)
-                    return BadRequest($"Количество строк должно быть от 1 до 10000. Получено: {parseResult.Records.Count}");
-
-                // обработка в транзакции
-                var result = await _recordService.ProcessFileAsync(uploadedFile, parseResult.Records);
-
-                if (!result.Success)
-                {
-                    return BadRequest(result.ErrorMessage);
-                }
-
-                return Ok(new { result.FileId, result.RecordCount });
-
-
+                Logger.LogError(result.Exception, "Ошибка при загрузке файла csv");
+                return StatusCode(500, "Ошибка при обработке файла");
             }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Ошибка при обработке запроса");
-                return StatusCode(500, "Внутренняя ошибка сервера");
-            }
+
+            return Ok(new { result.Data.FileId, result.Data.RecordCount });
         }
 
         private async Task<(bool IsValid, List<CsvRecordDto> Records, List<string> Errors)> ParseAndValidateCsv(IFormFile file)
